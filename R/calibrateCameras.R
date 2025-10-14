@@ -184,7 +184,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 						# GET FILE INFO
 						ffmpeg_i <- suppressWarnings(system2(
 							command='ffmpeg',
-							args=paste("-i", gsub(' ', '\\\\ ', file.path(img.dir, vid_frames[i]))),
+							args=paste('-i', shQuote(file.path(img.dir, vid_frames[i]))),
 							stdout=FALSE,
 							stderr=TRUE))
 						ffmpeg_i <- paste(ffmpeg_i, collapse='\n')
@@ -203,15 +203,17 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 
 						## USING OPENCV
 						# SET COMMAND TO FIND FRAME COUNT
-						command <- paste0('./', gsub(' ', '\\\\ ', exec.dir), 'get_frame_count ', 
-							gsub(' ', '\\\\ ', file.path(img.dir, vid_fnames[i])))
+						command <- paste(
+							shQuote(file.path('.', exec.dir, 'get_frame_count')),
+							shQuote(file.path(img.dir, vid_fnames[i])))
 
 						# FIND NUMBER OF FRAMES IN VIDEO
 						vid_nframes[i] <- as.numeric(system(command=command, intern=TRUE))
 
 						# SET COMMAND TO FIND FRAME SIZE
-						command <- paste0('./', gsub(' ', '\\\\ ', exec.dir), 'get_frame_size ', 
-							gsub(' ', '\\\\ ', file.path(img.dir, vid_fnames[i])))
+						command <- paste(
+							shQuote(file.path('.', exec.dir, 'get_frame_size')),
+							shQuote(file.path(img.dir, vid_fnames[i])))
 
 						# SET IMAGE SIZE
 						img_size[i, ] <- as.numeric(strsplit(x=system(command=command, intern=TRUE), split=',')[[1]])
@@ -463,13 +465,13 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 					if(img_type == 'video frames') input_video <- 0
 
 					# WRITE COMMAND
-					command <- paste0(
-						'./', gsub(' ', '\\\\ ', exec.dir), 'find_checkerboard_corners ', 
-						gsub(' ', '\\\\ ', file.path(img.dir, vid_fnames[i])), ' ',
-						gsub(' ', '\\\\ ', file.path(corner.dir, img_sub_dir[i])), ' ',
-						gsub(' ', '\\\\ ', file.path(verify.dir, img_sub_dir[i])), ' ',
-						nx, ' ', ny, ' ', num.aspects.read, ' ', num.aspects.read+80, ' ', 
-						min_nframes, ' 0 ', as.numeric(with.circles), ' ', input_video)
+					command <- paste(
+						shQuote(file.path('.', exec.dir, 'find_checkerboard_corners')), 
+						shQuote(file.path(img.dir, vid_fnames[i])),
+						shQuote(file.path(corner.dir, img_sub_dir[i])),
+						shQuote(file.path(verify.dir, img_sub_dir[i])),
+						nx, ny, num.aspects.read, num.aspects.read+80, 
+						min_nframes, 0, as.numeric(with.circles), input_video)
 
 					# CALL COMMAND
 					#cat('\n');cat(command, '\n')

@@ -71,7 +71,7 @@ extractFrames <- function(file = NULL, save.to = NULL, frames = NULL, names = NU
 		check_system_command_SM('ffmpeg')
 
 		# Get ffmpeg info
-		ffmpeg_i <- paste(suppressWarnings(system2(command='ffmpeg', args=paste0("-i ", gsub(' ', '\\\\ ', file)), 
+		ffmpeg_i <- paste(suppressWarnings(system2(command='ffmpeg', args=paste("-i", shQuote(file)), 
 			stdout=FALSE, stderr=TRUE)), collapse='\n')
 	
 		# Read video info
@@ -161,8 +161,9 @@ extractFrames <- function(file = NULL, save.to = NULL, frames = NULL, names = NU
 	for(j in 1:length(frame_t)){
 
 		# Write command to extract frame using ffmpeg
-		command_args <- paste0("-accurate_seek -ss ", frame_t[j], " -i ", gsub(' ', '\\\\ ', file), 
-			" -y -qscale:v ", qscale," -frames:v 1 ", gsub(' ', '\\\\ ', save.to), frame_format[j], ".", ext[1])
+		command_args <- paste("-accurate_seek", "-ss", frame_t[j], "-i", shQuote(file),
+			"-y", "-qscale:v" , qscale, "-frames:v",  1,
+			shQuote(file.path(save.to, paste0(frame_format[j], ".", ext[1]))))
 		#print(paste0('ffmpeg ', command_args))
 
 		# Call command
