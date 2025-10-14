@@ -21,8 +21,7 @@ reflectMissingShapes <- function(shapes, file = NULL, print.progress = FALSE, ..
 		if(grepl('[.]txt$', file[1], ignore.case=TRUE)){
 
 			# REMOVE FILE TO GET DIRECTORY
-			file_dir <- strsplit(file[1], '/')[[1]]
-			file_dir <- paste(file_dir[1:(length(file_dir)-1)], collapse='/')
+			file_dir <- dirname(file[1])
 
 			# CREATE DIRECTORY IF IT DOESN'T ALREADY EXIST
 			if(!file.exists(file_dir)) dir.create(file_dir)

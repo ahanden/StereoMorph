@@ -21,18 +21,12 @@ readShapes <- function(file, fields=NULL){
 	}
 	
 	# GET FILENAMES
-	str_split <- strsplit(file, '/')
-	last_name <- rep(NA, length(file))
-	last2_name <- rep(NA, length(file))
-	for(i in 1:length(str_split)){
-		last_name[i] <- tail(str_split[[i]], 1)
-		if(length(str_split[[i]]) > 1) last2_name[i] <- str_split[[i]][length(str_split[[i]])-1]
-	}
-	
-	if(length(unique(last_name)) == length(file)){
-		filenames <- gsub('[.]txt$', '', last_name)
-	}else if(length(unique(last2_name)) == length(file)){
-		filenames <- last2_name
+	base.filenames <- basename(file)
+	parent.directories <- basename(dirname(file))
+	if(length(unique(base.filenames)) == length(file)) {
+		filenames <- gsub('[.]txt$', '', base.filenames)
+	}else if(length(unique(parent.directories)) == length(file)) {
+		filenames <- parent.directories
 	}else{
 		filenames <- 1:length(file)
 	}

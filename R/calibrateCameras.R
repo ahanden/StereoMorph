@@ -12,10 +12,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 	if(file.exists(cal.file)) cal.list <- XML4R2list(file=cal.file)$calibration
 
 	# FIND PATH TO FOLDER WHERE CALIBRATION FILE IS
-	cal_file_str_split <- strsplit(cal.file, '/')[[1]]
-	
-	# SET CALIBRATION DIRECTORY BY REMOVING FILENAME
-	if(length(cal_file_str_split) > 1){calib_dir <- paste0(paste(head(cal_file_str_split, -1), collapse="/"), "/")}else{calib_dir <- ""}
+	calib_dir <- dirname(cal.file)
 	
 	# SET INPUT PARAMETERS TO OVERWRITE FROM CALIBRATION FILE (IF NON-NULL IN FILE)
 	write_param_from_file <- c('img.dir', 'sq.size', 'nx', 'ny', 'corner.dir', 'flip.view', 'verify.dir')
@@ -155,8 +152,6 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 			if(img_type == 'video' && !'get_frame_count' %in% list.files(exec.dir)) stop(paste0("'get_frame_count' not found in '", exec.dir, "'."))
 			if(img_type == 'video' && !'find_checkerboard_corners' %in% list.files(exec.dir)) stop(paste0("'find_checkerboard_corners' not found in '", exec.dir, "'."))
 
-			# ADD SLASH AT END IF NOT PRESENT
-			if(!grepl('[/]$', exec.dir)) exec.dir <- paste0(exec.dir, '/')
 		}
 
 		if(!is.null(cal.list$vid.nframes) && !is.null(cal.list$img.size) && FALSE){

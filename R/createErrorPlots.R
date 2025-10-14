@@ -6,9 +6,6 @@ createErrorPlots <- function(cal.coeff, corners, nx, sq.size.num, sq.size.units 
 	
 	if(is.null(file)) return(dlt_test)
 
-	# ADD DIRECTORY SYMBOL IF NOT EMPTY
-	if(file != '') if(!grepl('/$', file)) file <- paste0(file, '/')
-
 	# CREATE PLOTS
 	pdf(file=paste0(file, 'Epipolar error by aspect.pdf'))
 	par(mar=c(6.1, 4.1, 3.1, 2.1))

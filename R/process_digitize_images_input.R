@@ -155,11 +155,7 @@ process_digitize_images_input <- function(image.file = image.file,
 	for(i in 1:ncol(images_fpaths)){
 		
 		# GET LIST OF FILENAMES
-		str_split <- strsplit(images_fpaths[, i], '/')
-		
-		# GET IMAGE NAMES
-		image_fnames <- rep(NA, nrow(images_fpaths))
-		for(j in 1:length(str_split)) image_fnames[j] <- gsub('[.][A-Z]+$', '', str_split[[j]][length(str_split[[j]])], ignore.case=TRUE)
+		image_fnames <- gsub('[.][A-Z]+$', '', basename(images_fpath[, i]), ignore.case=TRUE)
 
 		# CHECK FOR DUPLICATES (WITHOUT FILE EXTENSION)
 		if(length(image_fnames) != length(unique(image_fnames)))

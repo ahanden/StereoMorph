@@ -62,9 +62,6 @@ extractFrames <- function(file = NULL, save.to = NULL, frames = NULL, names = NU
 		if(save.to != '' && !file.exists(save.to)) stop(paste0("save.to filepath '", save.to, "' not found."))
 	}
 
-	# Add slash at end if not present
-	if(save.to != '' && !grepl('[/]$', save.to)) save.to <- paste0(save.to, '/')
-
 	if(is.null(video.i)){
 
 		# Check that ffmpeg is installed and accessible on system
