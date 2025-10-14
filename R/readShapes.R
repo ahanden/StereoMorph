@@ -17,7 +17,7 @@ readShapes <- function(file, fields=NULL){
 		if(!file.exists(file)) stop(paste0("'", file, "' not found."))
 
 		# LIST FILES, IF DIRECTORY
-		file <- paste0(gsub('/+$', '', file), '/', list.files(file))
+		file <- file.path(gsub('/+$', '', file), list.files(file))
 	}
 	
 	# GET FILENAMES

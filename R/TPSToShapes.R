@@ -26,7 +26,7 @@ TPSToShapes <- function(tps.file, shapes.file, image.file, landmark.names,
 		if(!file.exists(shapes.file)) stop(paste0("Folder '", shapes.file, "' where shapes files are to be saved was not found."))
 
 		# Set filepaths
-		shapes_saveas <- paste0(shapes.file, "/", dimnames(read_tps$landmarks.pixel)[[3]], '.txt')
+		shapes_saveas <- file.path(shapes.file, paste0(dimnames(read_tps$landmarks.pixel)[[3]], '.txt'))
 	}
 
 	# Get corresponding image filepaths
@@ -38,7 +38,7 @@ TPSToShapes <- function(tps.file, shapes.file, image.file, landmark.names,
 		if(!file.exists(image.file)) stop(paste0("Folder '", image.file, "' containing the images was not found."))
 		
 		# Read directory contents
-		image_fpaths <- paste0(image.file, "/", list.files(image.file))
+		image_fpaths <- file.path(image.file, list.files(image.file))
 		image_names <- gsub('[.](jpg|jpeg|bmp|png|gif|tiff|tif)$', '', list.files(image.file), ignore.case=TRUE)
 		names(image_fpaths) <- image_names
 

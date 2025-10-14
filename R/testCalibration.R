@@ -18,7 +18,7 @@ testCalibration <- function(img.dir, cal.file, corner.dir, sq.size, nx, ny, erro
 	num_views <- length(imgs_list_files)
 
 	# GET FILE PATHS TO CALIBRATON IMAGE SUB-FOLDERS
-	img_fpaths <- paste0(img.dir, '/', imgs_list_files)
+	img_fpaths <- file.path(img.dir, imgs_list_files)
 
 	# GET SUB-FOLDER NAMES
 	img_sub_dir <- gsub('(.mov|.avi|.mp4|.mpg)$', '', imgs_list_files, ignore.case=TRUE)
@@ -33,7 +33,7 @@ testCalibration <- function(img.dir, cal.file, corner.dir, sq.size, nx, ny, erro
 	if(!file.exists(corner.dir)) dir.create(path=corner.dir)
 
 	# CREATE SUB FOLDERS IF NOT PRESENT
-	for(dir_name in img_sub_dir) if(!file.exists(paste0(corner.dir, '/', dir_name))) dir.create(paste0(corner.dir, '/', dir_name))
+	for(dir_name in img_sub_dir) if(!file.exists(file.path(corner.dir, dir_name))) dir.create(file.path(corner.dir, dir_name))
 
 	# GET SQUARE SIZES AND UNITS
 	sq.size.num <- as.numeric(gsub('[[:alpha:], ]', '', sq.size))
@@ -47,8 +47,8 @@ testCalibration <- function(img.dir, cal.file, corner.dir, sq.size, nx, ny, erro
 	if(img_type == 'image'){
 
 		# GET IMAGE NAMES
-		img_fnames_v1 <- list.files(paste0(img.dir, '/', imgs_list_files[1]))
-		img_fnames_v2 <- list.files(paste0(img.dir, '/', imgs_list_files[2]))
+		img_fnames_v1 <- list.files(file.path(img.dir, imgs_list_files[1]))
+		img_fnames_v2 <- list.files(file.path(img.dir, imgs_list_files[2]))
 
 		# FIND COMMON CALIBRATION IMAGE FILENAMES
 		img_fnames <- img_fnames_v1[img_fnames_v1 %in% img_fnames_v2]
@@ -66,10 +66,10 @@ testCalibration <- function(img.dir, cal.file, corner.dir, sq.size, nx, ny, erro
 		if(!file.exists(verify.dir)) dir.create(verify.dir)
 
 		# CREATE VIEW FOLDERS IF VERIFY FOLDER IS EMPTY
-		for(dir_name in img_sub_dir) if(!file.exists(paste0(verify.dir, '/', dir_name))) dir.create(paste0(verify.dir, '/', dir_name))
+		for(dir_name in img_sub_dir) if(!file.exists(file.path(verify.dir, dir_name))) dir.create(file.path(verify.dir, dir_name))
 
 		# SET VERIFY FILE PATHS AND FILE NAMES
-		verify_fpaths <- paste0(verify.dir, '/', list.files(verify.dir))
+		verify_fpaths <- file.path(verify.dir, list.files(verify.dir))
 		if(img_type == 'image') verify_fnames <- img_fnames
 	}
 
@@ -85,7 +85,7 @@ testCalibration <- function(img.dir, cal.file, corner.dir, sq.size, nx, ny, erro
 
 	# CHECK IF CORNERS ARE FOUND IN ALL VIEWS
 	list_files_length <- rep(NA, num_views)
-	for(i in 1:num_views) list_files_length[i] <- length(list.files(paste0(corner.dir, '/', img_sub_dir[i])))
+	for(i in 1:num_views) list_files_length[i] <- length(list.files(file.path(corner.dir, img_sub_dir[i])))
 
 	# IF ALL FOLDERS HAVE FILES, PROMPT WHETHER TO RE-DETECT CORNERS
 	if(sum(list_files_length > 0) == num_views){
@@ -94,7 +94,7 @@ testCalibration <- function(img.dir, cal.file, corner.dir, sq.size, nx, ny, erro
 			cat(paste0("Saved calibration corners found for all views in '", corner.dir, "' folder.\n\n"))
 
 			for(i in 1:num_views){
-				num_frames_detected <- length(list.files(paste0(corner.dir, '/', img_sub_dir[i])))
+				num_frames_detected <- length(list.files(file.path(corner.dir, img_sub_dir[i])))
 				if(img_type == 'image'){
 					cat(paste0("\t\t", img_sub_dir[i], paste(rep(' ', img_sub_dir_salign[i]), collapse='')))
 					cat(paste0(": Corners detected in ", num_frames_detected, " aspects\n"))
@@ -137,15 +137,15 @@ testCalibration <- function(img.dir, cal.file, corner.dir, sq.size, nx, ny, erro
 		
 					# SET VERIFY FILEPATH IF NON-NULL
 					verify_fpath <- NULL
-					if(!is.null(verify_fpaths)) verify_fpath <- paste0(verify_fpaths[j], '/', verify_fnames[i])
+					if(!is.null(verify_fpaths)) verify_fpath <- file.path(verify_fpaths[j], verify_fnames[i])
 
 					# SET CORNER FILEPATH
-					corner_fpath <- paste0(corner.dir, '/', img_sub_dir[j], '/', gsub('[.][A-Za-z]+$', '.txt', img_fnames[i]))
+					corner_fpath <- file.path(corner.dir, img_sub_dir[j], gsub('[.][A-Za-z]+$', '.txt', img_fnames[i]))
 				
 					# SPECIFY WHETHER TO FLIP CORNER ORDER
 					if(cal.list$flip.view && j == 2){flip <- TRUE}else{flip <- FALSE}
 
-					cal_corners[, , i, j] <- findCheckerboardCorners(image.file=paste0(img_fpaths[j], '/', img_fnames[i]), 
+					cal_corners[, , i, j] <- findCheckerboardCorners(image.file=file.path(img_fpaths[j], img_fnames[i]),
 						nx=nx, ny=ny, flip=flip, corner.file=corner_fpath, verify.file=verify_fpath, print.progress=FALSE)
 
 					if(print.progress){
@@ -168,7 +168,7 @@ testCalibration <- function(img.dir, cal.file, corner.dir, sq.size, nx, ny, erro
 
 		# GET FRAME NAMES
 		frame_names <- c()
-		for(i in 1:num_views) frame_names <- c(frame_names, gsub('.txt', '', list.files(paste0(corner.dir[i], '/', img_sub_dir[i]))))
+		for(i in 1:num_views) frame_names <- c(frame_names, gsub('.txt', '', list.files(file.path(corner.dir[i], img_sub_dir[i]))))
 
 		# GET UNIQUE FRAME NAMES
 		frame_names_unique <- unique(frame_names)
@@ -181,12 +181,12 @@ testCalibration <- function(img.dir, cal.file, corner.dir, sq.size, nx, ny, erro
 		for(i in 1:num_views){
 
 			# GET CORNER FILES
-			corner_files <- gsub('.txt', '', list.files(paste0(corner.dir, '/', img_sub_dir[i])))
+			corner_files <- gsub('.txt', '', list.files(file.path(corner.dir, img_sub_dir[i])))
 	
 			# READ CORNERS INTO ARRAY FROM FILES
 			for(j in 1:length(corner_files)){
 				cal_corners[, , corner_files[j], i] <- 
-					as.matrix(read.table(paste0(corner.dir, '/', img_sub_dir[i], '/', corner_files[j], '.txt')))
+					as.matrix(read.table(file.path(corner.dir, img_sub_dir[i], paste0(corner_files[j], '.txt'))))
 			}
 		}
 	}

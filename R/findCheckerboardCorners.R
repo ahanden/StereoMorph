@@ -45,7 +45,7 @@ findCheckerboardCorners <- function(image.file, nx, ny, corner.file=NULL, verify
 
 		image_file <- ''
 		for(i in 1:length(image_input)){
-			image_file <- c(image_file, paste0(image_input[i], "/", list.files(image_input[i])))
+			image_file <- c(image_file, file.path(image_input[i], list.files(image_input[i])))
 		}
 		image.file <- image_file[2:length(image_file)]
 
@@ -73,16 +73,16 @@ findCheckerboardCorners <- function(image.file, nx, ny, corner.file=NULL, verify
 		if(sum(is_text) == 0){
 			if(is.vector(image_input)){
 				corner_file <- ''
-				for(i in 1:length(image_input)) corner_file <- c(corner_file, paste0(corner.file[i], "/", gsub('.[a-zA-Z]+$', '.txt', list.files(image_input[i]))))
+				for(i in 1:length(image_input)) corner_file <- c(corner_file, file.path(corner.file[i], gsub('.[a-zA-Z]+$', '.txt', list.files(image_input[i]))))
 				corner.file <- corner_file[2:length(corner_file)]
 			}else{
 				if(nrow(image_input) == 1 && ncol(image_input) > 1){
 					corner_file <- matrix(NA, nrow=nrow(image.file), ncol=ncol(image.file))
-					for(i in 1:ncol(image_input)) corner_file[, i] <- paste0(corner.file[i], "/", gsub('.[a-zA-Z]+$', '.txt', list.files(image_input[, i])))
+					for(i in 1:ncol(image_input)) corner_file[, i] <- file.path(corner.file[i], gsub('.[a-zA-Z]+$', '.txt', list.files(image_input[, i])))
 					corner.file <- corner_file
 				}else{
 					corner_file <- matrix(NA, nrow=nrow(image.file), ncol=ncol(image.file))
-					for(i in 1:nrow(image_input)) corner_file[i, ] <- paste0(corner.file[i], "/", gsub('.[a-zA-Z]+$', '.txt', list.files(image_input[i, ])))
+					for(i in 1:nrow(image_input)) corner_file[i, ] <- file.path(corner.file[i], gsub('.[a-zA-Z]+$', '.txt', list.files(image_input[i, ])))
 					corner.file <- corner_file
 				}
 			}
@@ -95,16 +95,16 @@ findCheckerboardCorners <- function(image.file, nx, ny, corner.file=NULL, verify
 		if(sum(is_image) == 0){
 			if(is.vector(image_input)){
 				verify_file <- ''
-				for(i in 1:length(image_input)) verify_file <- c(verify_file, paste0(verify.file[i], "/", list.files(image_input[i])))
+				for(i in 1:length(image_input)) verify_file <- c(verify_file, file.path(verify.file[i], list.files(image_input[i])))
 				verify.file <- verify_file[2:length(verify_file)]
 			}else{
 				if(nrow(image_input) == 1 && ncol(image_input) > 1){
 					verify_file <- matrix(NA, nrow=nrow(image.file), ncol=ncol(image.file))
-					for(i in 1:ncol(image_input)) verify_file[, i] <- paste0(verify.file[i], "/", list.files(image_input[, i]))
+					for(i in 1:ncol(image_input)) verify_file[, i] <- file.path(verify.file[i], list.files(image_input[, i]))
 					verify.file <- verify_file
 				}else{
 					verify_file <- matrix(NA, nrow=nrow(image.file), ncol=ncol(image.file))
-					for(i in 1:nrow(image_input)) verify_file[i, ] <- paste0(verify.file[i], "/", list.files(image_input[i, ]))
+					for(i in 1:nrow(image_input)) verify_file[i, ] <- file.path(verify.file[i], list.files(image_input[i, ]))
 					verify.file <- verify_file
 				}
 			}

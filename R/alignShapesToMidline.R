@@ -9,7 +9,7 @@ alignShapesToMidline <- function(shapes, file = NULL, print.progress = FALSE, ..
 
 			if(is.null(file)) stop("If 'shapes' is a directory, file must also be a directory.")
 
-			shapes_in_fpaths <- paste0(gsub('/$', '', shapes), '/', list.files(shapes))
+			shapes_in_fpaths <- file.path(gsub('/$', '', shapes), list.files(shapes))
 		}
 
 		if(is.null(file)){
@@ -31,7 +31,7 @@ alignShapesToMidline <- function(shapes, file = NULL, print.progress = FALSE, ..
 			shapes_save_fpaths <- file
 		}else{
 			if(!file.exists(file)) dir.create(file)
-			shapes_save_fpaths <- paste0(gsub('/$', '', file), '/', list.files(shapes))
+			shapes_save_fpaths <- file.path(gsub('/$', '', file), list.files(shapes))
 		}
 
 		# CALL DRAW SHAPES FOR EACH FILE
