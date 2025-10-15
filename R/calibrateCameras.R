@@ -3,7 +3,8 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 	min.views = 'max', exec.dir = NULL, undistort = FALSE, num.aspects.read = 'auto', 
 	num.sample.est = 'auto', num.sample.sets = 'auto', num.aspects.sample = 'auto', 
 	max.sample.optim = 30, nlm.calls.max = 20, fit.min.break = 1, objective.min = 1, 
-	objective.min.break = 5, with.circles = FALSE, sample.est = NULL, ...){
+	objective.min.break = 5, with.circles = FALSE, sample.est = NULL,
+	run.parallel = FALSE, ...){
 
 	################################ CHECK INPUT PARAMETERS ##############################
 
@@ -603,10 +604,10 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 
 				# ESTIMATE UNDISTORTION COEFFICIENTS
 				undist_params <- estimateUndistortion(coor.2d=cal_corners[, , undist_sample_nona, view], nx, 
-					image.size=img_size[view, ])
+					image.size=img_size[view, ], run.parallel=run.parallel)
 
 				# ESTIMATE DISTORTION COEFFICIENTS (TO DISTORT EPIPOLAR LINES)
-				dist_params <- estimateDistortion(undist_params, img_size[view, ])
+				dist_params <- estimateDistortion(undist_params, img_size[view, ], run.parallel=run.parallel)
 				
 				undistort_params[view, ] <- undist_params
 				distort_params[view, ] <- dist_params

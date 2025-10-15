@@ -13,7 +13,7 @@ calibrateCameras(img.dir, sq.size, nx, ny, cal.file, corner.dir,
                  num.sample.est = 'auto', num.sample.sets = 'auto', 
                  num.aspects.sample = 'auto', max.sample.optim = 30, nlm.calls.max = 20, 
                  fit.min.break = 1, objective.min = 1, objective.min.break = 5, 
-                 with.circles = FALSE, sample.est = NULL, ...)
+                 with.circles = FALSE, sample.est = NULL, run.parallel = FALSE, ...)
 }
 \arguments{
   \item{img.dir}{folder containing images of the checkerboard pattern, separated into separate folders by view.}
@@ -40,6 +40,7 @@ calibrateCameras(img.dir, sq.size, nx, ny, cal.file, corner.dir,
   \item{objective.min}{The expected mean reconstruction error when optimizing the calibration coefficients (the minimum, or \code{objective} value returned by \code{nlminb()}). A value between 0.2 and 1.2 should be reasonable.}
   \item{with.circles}{logical indicating whether the checkerboard pattern includes concentric circles for identifying the starting corner. Requires external executables (still under development).}
   \item{sample.est}{vector of explicitly defined aspects to use in coefficient estimation.}
+  \item{run.parallel}{logical or number (integer) for using parallel processing. If FALSE, does not use parallel processing. If TRUE, uses parallel processing with one thread per CPU core. If a number (integer), uses that many threads.}
   \item{...}{further arguments to be passed to \code{\link{dltCalibrateCameras}}.}
 }
 \value{

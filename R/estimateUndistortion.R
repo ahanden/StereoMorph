@@ -1,4 +1,4 @@
-estimateUndistortion <- function(coor.2d, cal.nx, image.size){
+estimateUndistortion <- function(coor.2d, cal.nx, image.size, run.parallel=FALSE){
 
 	# GET NUMBER OF CORNERS IN OTHER DIMENSION
 	cal.ny <- dim(coor.2d)[1] / cal.nx
@@ -33,6 +33,7 @@ estimateUndistortion <- function(coor.2d, cal.nx, image.size){
 	# SAVE WITH EACH TRY
 	objectives <- rep(NA, length(p_start))
 	par <- as.list(rep(NA, length(p_start)))
+
 	
 	# SAVE OBJECTIVE WITH NO DISTORTION
 	objectives[1] <- undistortionError(p=c(image.size[1]/2, image.size[2]/2, p_start[[1]]), 
@@ -40,24 +41,55 @@ estimateUndistortion <- function(coor.2d, cal.nx, image.size){
 	par[[1]] <- c(image.size[1]/2, image.size[2]/2, p_start[[1]])
 
 	# SKIP FIRST (NO DISTORTION CASE)
-	for(i in 2:length(p_start)){
+	nlm.input <- lapply(2:length(p_start), function(i) {
+		list(
+			i=i,
+			start=c(image.size[1]/2, image.size[2]/2, p_start[[i]]),
+			objective=undistortionError,
+			coor.img=coor.2d,
+			coor.obj=coor_obj_array,
+			image.size=image.size)
+	})
 
-		# FIND OPTIMAL DISTORTION COEFFICIENTS, SKIP IF RETURNS ERROR
-		nlm_fit <- tryCatch(
+	if(run.parallel == FALSE) {
+		applyFn <- lapply
+	} else {
+		if(run.parallel == TRUE) {
+			numCores <- detectCores()
+		} else {
+			numCores <- run.parallel
+		}
+		cl <- makeCluster(numCores)
+		applyFn <- function(input, fn) { 
+			parLapply(cl, input, fn)
+		}
+	}
+
+	# FIND OPTIMAL DISTORTION COEFFICIENTS, SKIP IF RETURNS ERROR
+	nlm.results <- applyFn(nlm.input, function(params) {
+		nlm.fit <- tryCatch(
 			expr={
-				nlminb(start=c(image.size[1]/2, image.size[2]/2, p_start[[i]]), objective=undistortionError, 
-					coor.img=coor.2d, coor.obj=coor_obj_array, image.size=image.size)
+				nlminb(
+					start=params$start,
+					objective=params$objective,
+					coor.img=params$coor.img,
+					coor.obj=params$coor.obj,
+					image.size=params$image.size)
 			},
 			error=function(cond) return(NULL),
 			warning=function(cond) return(NULL)
 		)
+		list(i=params$i, fit=nlm.fit)
+	})
+	if(run.parallel) stopCluster(cl)
 
-		if(is.null(nlm_fit)) next
+	invisible(lapply(nlm.results, function(result) {
+		if(!is.null(result$fit)) {
+			objectives[result$i] <- result$fit$objective
+			par[[result$i]] <- result$fit$par
+		}
+	}))
 
-		objectives[i] <- nlm_fit$objective
-		par[[i]] <- nlm_fit$par
-	}
-	
 	# GET PARAMETERS FROM RUN WITH LOWEST ERROR (INCLUDING NO DISTORTION CASE)
 	dist_params <- par[[which.min(objectives)]]
 	

@@ -1,4 +1,4 @@
-estimateDistortion <- function(undistort.params, img.size){
+estimateDistortion <- function(undistort.params, img.size, run.parallel=FALSE){
 
 	nx <- 10
 	ny <- 10
@@ -33,23 +33,54 @@ estimateDistortion <- function(undistort.params, img.size){
 	par[[1]] <- c(img.size[1]/2, img.size[2]/2, p_start[[1]])
 
 	# Skip first (no distortion) case
-	for(i in 2:length(p_start)){
+	nlm.input <- lapply(2:length(p_start), function(i) {
+		list(
+			i=i,
+			start=c(img.size[1]/2, img.size[2]/2, p_start[[i]]),
+			objective=distortionError,
+			ucoor=u_corners,
+			dcoor=d_corners,
+			img.size=img.size)
+	})
 
-		# Find optimal distortion coefficients, skip if returns error
-		nlm_fit <- tryCatch(
+	if(run.parallel == FALSE) {
+		applyFn <- lapply
+	} else {
+		if(run.parallel == TRUE) {
+			numCores <- detectCores()
+		} else {
+			numCores <- run.parallel
+		}
+		cl <- makeCluster(numCores)
+			applyFn <- function(input, fn) {
+			parLapply(cl, input, fn)
+		}
+	}
+
+	# Find optimal distortion coefficients, skip if returns error
+	nlm.results <- applyFn(nlm.input, function(params) {
+		nlm.fit <- tryCatch(
 			expr={
-				nlminb(start=c(img.size[1]/2, img.size[2]/2, p_start[[i]]), objective=distortionError, 
-					ucoor=u_corners, dcoor=d_corners, img.size=img.size)
+				nlminb(
+					start=params$start,
+					objective=params$objective,
+					ucoor=params$ucoor,
+					dcoor=params$dcoor,
+					img.size=params$img.size)
 			},
 			error=function(cond) return(NULL),
 			warning=function(cond) return(NULL)
 		)
+		list(i=params$i, fit=nlm.fit)
+	})
+	if(run.parallel) stopCluster(cl)
 
-		if(is.null(nlm_fit)) next
-
-		objectives[i] <- nlm_fit$objective
-		par[[i]] <- nlm_fit$par
-	}
+	invisible(lapply(nlm.results, function(result) {
+		if(!is.null(result$fit)) {
+			objectives[result$i] <- result$fit$objective
+			par[[result$i]] <- result$fit$par
+		}
+	}))
 	
 	# Get parameter from run with the lowest error (including no distortion case)
 	p <- par[[which.min(objectives)]]
