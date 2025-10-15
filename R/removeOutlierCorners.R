@@ -105,7 +105,7 @@ removeOutlierCorners <- function(int_corners, nx, ny){
 
 		if(plot) points(int_corners[remove, ], col='red', cex=1.1)
 		
-		int_corners <- int_corners[!remove, ]
+		int_corners <- int_corners[!remove, , drop=FALSE]
 		dist_score <- dist_score[!remove]
 	}
 
@@ -114,7 +114,7 @@ removeOutlierCorners <- function(int_corners, nx, ny){
 	rank_thresh <- sort(dist_score_rank)[nx*ny]
 	
 	# ONLY RETAIN ROWS AT OR BELOW THRESHOLD
-	corners_trim <- int_corners[dist_score_rank <= rank_thresh, ]
+	corners_trim <- int_corners[dist_score_rank <= rank_thresh, , drop=FALSE]
 
 	if(plot) points(corners_trim, col='orange', cex=0.4)
 	
