@@ -1,7 +1,7 @@
 findCheckerboardCorners <- function(image.file, nx, ny, corner.file=NULL, verify.file=NULL, 
 	perim.min = 'auto', perim.max = 'auto', dilations.min = 0, dilations.max = 7, sub.pix.win = NULL,
 	sub.pix.win.min = NULL, quad.fit.max=4, poly.cont.min=-0.3, poly.cont.max=0.3, quad.approx.thresh = 'auto', 
-	flip = FALSE, print.progress = TRUE, verbose = FALSE, debug = FALSE) {
+	flip = FALSE, print.progress = TRUE, verbose = FALSE, debug = FALSE, max.dist.int.corners=20) {
 
 	proc_start <- proc.time()[3]
 
@@ -17,7 +17,6 @@ findCheckerboardCorners <- function(image.file, nx, ny, corner.file=NULL, verify
 	dilation_ct <- 0
 	poly_asp_min <- 0.05
 	sub.pix.max.iter <- 20
-	max.dist.int.corners <- 20
 	#max.int.corner.dev <- 3
 	criteria <- 0.01
 	num_quads_size_threshold <- 3
