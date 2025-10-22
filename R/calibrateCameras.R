@@ -410,7 +410,12 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 
 		}else if(img_type %in% c('video', 'video frames')){
 
-			if(num.aspects.read == 'auto') num.aspects.read <- 60
+			if(num.aspects.read == 'auto') {
+				num.aspects.read <- 60
+			}
+			else if(num.aspects.read == 'max') {
+				num.aspects.read <- min(vid_nframes) - 40
+			}
 
 			# GET MINIMUM NUMBER OF FRAMES AMONG ALL VIDEOS
 			min_nframes <- min(vid_nframes)
