@@ -17,22 +17,17 @@ readShapes <- function(file, fields=NULL){
 		if(!file.exists(file)) stop(paste0("'", file, "' not found."))
 
 		# LIST FILES, IF DIRECTORY
-		file <- paste0(gsub('/+$', '', file), '/', list.files(file))
+		file <- list.files(file, full.names=TRUE)
 	}
 	
 	# GET FILENAMES
-	str_split <- strsplit(file, '/')
-	last_name <- rep(NA, length(file))
-	last2_name <- rep(NA, length(file))
-	for(i in 1:length(str_split)){
-		last_name[i] <- tail(str_split[[i]], 1)
-		if(length(str_split[[i]]) > 1) last2_name[i] <- str_split[[i]][length(str_split[[i]])-1]
-	}
+	file.basename <- basename(file)
+	file.dirname <- basename(dirname(file))
 	
-	if(length(unique(last_name)) == length(file)){
-		filenames <- gsub('[.]txt$', '', last_name)
-	}else if(length(unique(last2_name)) == length(file)){
-		filenames <- last2_name
+	if(length(unique(file.basename)) == length(file)){
+		filenames <- gsub('[.]txt$', '', file.basename)
+	}else if(length(unique(file.dirname)) == length(file)){
+		filenames <- file.dirname
 	}else{
 		filenames <- 1:length(file)
 	}

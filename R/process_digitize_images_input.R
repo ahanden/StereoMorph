@@ -52,8 +52,8 @@ process_digitize_images_input <- function(image.file = image.file,
 
 			## STEREO CASE
 			# FIND OVERLAPPING FILES
-			overlapping_images <- list.files(paste0(image.file, '/', image_fdir[1]))
-			for(i in 2:length(image.file)) overlapping_images <- overlapping_images[overlapping_images %in% list.files(paste0(image.file, '/', image_fdir[i]))]
+			overlapping_images <- list.files(file.path(image.file, image_fdir[1]))
+			for(i in 2:length(image.file)) overlapping_images <- overlapping_images[overlapping_images %in% list.files(file.path(image.file, image_fdir[i]))]
 			if(length(overlapping_images) == 0) stop(paste0("No overlapping images among views found in 'image.file' ('", image.file, "')."))
 
 			# SET NUMBER OF VIEWS
@@ -69,7 +69,7 @@ process_digitize_images_input <- function(image.file = image.file,
 
 			# IF SUB-FOLDERS OF SHAPES.FILE DO NOT MATCH IMAGE_FDIR, CREATE THEM
 			if(!is.null(shapes.file) && sum(!image_fdir %in% list.files(shapes.file)) > 0)
-				for(i in 1:length(image_fdir)) if(!file.exists(paste0(shapes.file, '/', image_fdir[i]))) dir.create(paste0(shapes.file, '/', image_fdir[i]))
+				for(i in 1:length(image_fdir)) if(!file.exists(file.path(shapes.file, image_fdir[i]))) dir.create(file.path(shapes.file, image_fdir[i]))
 
 			# CHECK THAT FOLDERS IN SHAPES MATCH IMAGE FOLDERS
 			if(!is.null(landmarks.file) && sum(!image_fdir %in% list.files(landmarks.file)) > 0) stop(paste0("The landmarks folder (", landmarks.file, ") does not contain the same folders as the image.file (", image.file, ")."))
@@ -94,7 +94,7 @@ process_digitize_images_input <- function(image.file = image.file,
 			#if(sum(!found_in_all) > 0) stop(paste0("The contents of each folder in 'image.file' (", image.file, ") are not identical. File names within each view folder must match exactly across all views."))
 
 			# ADD FILE PATHS TO EACH FILE
-			for(i in 1:ncol(images_fpaths)) images_fpaths[, i] <- paste0(image_fdir[i], '/', images_fpaths[, i])
+			for(i in 1:ncol(images_fpaths)) images_fpaths[, i] <- file.path(image_fdir[i], images_fpaths[, i])
 		}
 
 		# CREATE MATCHING FILES FOR SHAPE DATA
@@ -104,11 +104,11 @@ process_digitize_images_input <- function(image.file = image.file,
 		if(!is.null(curve.points.file)) curve_points_fpaths <- gsub('[.][a-zA-Z]+$', '.txt', images_fpaths)
 
 		# ADD DIRECTORY PREFIX
-		for(i in 1:ncol(images_fpaths)) images_fpaths[, i] <- paste0(image.file, '/', images_fpaths[, i])
-		if(!is.null(shapes.file)) for(i in 1:ncol(shapes_fpaths)) shapes_fpaths[, i] <- paste0(shapes.file, '/', shapes_fpaths[, i])
-		if(!is.null(landmarks.file)) for(i in 1:ncol(landmarks_fpaths)) landmarks_fpaths[, i] <- paste0(landmarks.file, '/', landmarks_fpaths[, i])
-		if(!is.null(control.points.file)) for(i in 1:ncol(control_points_fpaths)) control_points_fpaths[, i] <- paste0(control.points.file, '/', control_points_fpaths[, i])
-		if(!is.null(curve.points.file)) for(i in 1:ncol(curve_points_fpaths)) curve_points_fpaths[, i] <- paste0(curve.points.file, '/', curve_points_fpaths[, i])
+		for(i in 1:ncol(images_fpaths)) images_fpaths[, i] <- file.path(image.file, images_fpaths[, i])
+		if(!is.null(shapes.file)) for(i in 1:ncol(shapes_fpaths)) shapes_fpaths[, i] <- file.path(shapes.file, shapes_fpaths[, i])
+		if(!is.null(landmarks.file)) for(i in 1:ncol(landmarks_fpaths)) landmarks_fpaths[, i] <- file.path(landmarks.file, landmarks_fpaths[, i])
+		if(!is.null(control.points.file)) for(i in 1:ncol(control_points_fpaths)) control_points_fpaths[, i] <- file.path(control.points.file, control_points_fpaths[, i])
+		if(!is.null(curve.points.file)) for(i in 1:ncol(curve_points_fpaths)) curve_points_fpaths[, i] <- file.path(curve.points.file, curve_points_fpaths[, i])
 	}
 	
 	# VECTOR INPUT, NOT DIRECTORY
@@ -154,12 +154,8 @@ process_digitize_images_input <- function(image.file = image.file,
 	# MAKE SURE THAT NO IMAGES HAVE THE SAME NAME BUT DIFFERENT EXTENSION (FILE TYPE)
 	for(i in 1:ncol(images_fpaths)){
 		
-		# GET LIST OF FILENAMES
-		str_split <- strsplit(images_fpaths[, i], '/')
-		
 		# GET IMAGE NAMES
-		image_fnames <- rep(NA, nrow(images_fpaths))
-		for(j in 1:length(str_split)) image_fnames[j] <- gsub('[.][A-Z]+$', '', str_split[[j]][length(str_split[[j]])], ignore.case=TRUE)
+		image_fnames <- gsub('[.][A-Z]+$', '', basename(image_fpaths[,i]), ignore.case=TRUE)
 
 		# CHECK FOR DUPLICATES (WITHOUT FILE EXTENSION)
 		if(length(image_fnames) != length(unique(image_fnames)))

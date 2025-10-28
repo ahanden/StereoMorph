@@ -13,10 +13,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 	if(file.exists(cal.file)) cal.list <- XML4R2list(file=cal.file)$calibration
 
 	# FIND PATH TO FOLDER WHERE CALIBRATION FILE IS
-	cal_file_str_split <- strsplit(cal.file, '/')[[1]]
-	
-	# SET CALIBRATION DIRECTORY BY REMOVING FILENAME
-	if(length(cal_file_str_split) > 1){calib_dir <- paste0(paste(head(cal_file_str_split, -1), collapse="/"), "/")}else{calib_dir <- ""}
+	calib_dir <- dirname(cal.file)
 	
 	# SET INPUT PARAMETERS TO OVERWRITE FROM CALIBRATION FILE (IF NON-NULL IN FILE)
 	write_param_from_file <- c('img.dir', 'sq.size', 'nx', 'ny', 'corner.dir', 'flip.view', 'verify.dir')
@@ -48,7 +45,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 	}
 
 	# GET FILE PATHS TO CALIBRATON IMAGE SUB-FOLDERS
-	img_fpaths <- paste0(img.dir, '/', imgs_list_files)
+	img_fpaths <- file.path(img.dir, imgs_list_files)
 	
 	# SET NUMBER OF CAMERA VIEWS
 	num_views <- length(img_fpaths)
@@ -70,7 +67,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 	
 	# IF THE NUMBER OF IMAGES EXCEEDS 50 TREAT AS VIDEO FRAMES
 	if(img_type == 'image'){
-		num_imgs <- length(list.files(paste0(img.dir, '/', imgs_list_files[1])))
+		num_imgs <- length(list.files(file.path(img.dir, imgs_list_files[1])))
 		if(num_imgs > 50) img_type <- 'video frames'
 	}
 	
@@ -93,8 +90,8 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 				stop(paste0("Image file directory '", img.dir, "' does not exist and image names are not included in calibration file."))
 			}
 		}else{
-			img_fnames_v1 <- list.files(paste0(img.dir, '/', imgs_list_files[1]))
-			img_fnames_v2 <- list.files(paste0(img.dir, '/', imgs_list_files[2]))
+			img_fnames_v1 <- list.files(file.path(img.dir, imgs_list_files[1]))
+			img_fnames_v2 <- list.files(file.path(img.dir, imgs_list_files[2]))
 		}
 		
 		# FIND COMMON CALIBRATION IMAGE FILENAMES
@@ -120,7 +117,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 				for(i in 1:num_views){
 
 					# File path to first image
-					first_image_fpath <- paste0(img.dir, '/', imgs_list_files[i], '/', img_fnames[1])
+					first_image_fpath <- file.path(img.dir, imgs_list_files[i], img_fnames[1])
 
 					# Get image dimensions
 					if(grepl(pattern='[.]jpg$|[.]jpeg$', x=img_fnames[1], ignore.case=TRUE)) img_dim <- dim(readJPEG(first_image_fpath, native=TRUE))
@@ -156,8 +153,6 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 			if(img_type == 'video' && !'get_frame_count' %in% list.files(exec.dir)) stop(paste0("'get_frame_count' not found in '", exec.dir, "'."))
 			if(img_type == 'video' && !'find_checkerboard_corners' %in% list.files(exec.dir)) stop(paste0("'find_checkerboard_corners' not found in '", exec.dir, "'."))
 
-			# ADD SLASH AT END IF NOT PRESENT
-			if(!grepl('[/]$', exec.dir)) exec.dir <- paste0(exec.dir, '/')
 		}
 
 		if(!is.null(cal.list$vid.nframes) && !is.null(cal.list$img.size) && FALSE){
@@ -183,7 +178,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 
 						## USING FFMPEG
 						# GET FILE INFO
-						ffmpeg_i <- suppressWarnings(system2(command='ffmpeg', args=paste0("-i ", gsub(' ', '\\\\ ', img.dir), '/', gsub(' ', '\\\\ ', vid_fnames[i])), 
+						ffmpeg_i <- suppressWarnings(system2(command='ffmpeg', args=paste("-i", shQuote(file.path(img.dir, vid_fnames[i]))), 
 							stdout=FALSE, stderr=TRUE))
 						ffmpeg_i <- paste(ffmpeg_i, collapse='\n')
 						
@@ -201,15 +196,15 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 
 						## USING OPENCV
 						# SET COMMAND TO FIND FRAME COUNT
-						command <- paste0('./', gsub(' ', '\\\\ ', exec.dir), 'get_frame_count ', 
-							gsub(' ', '\\\\ ', img.dir), '/', gsub(' ', '\\\\ ', vid_fnames[i]))
+						command <- paste(shQuote(file.path(exec.dir, 'get_frame_count')), 
+							shQuote(file.path(img.dir, vid_fnames[i])))
 
 						# FIND NUMBER OF FRAMES IN VIDEO
 						vid_nframes[i] <- as.numeric(system(command=command, intern=TRUE))
 
 						# SET COMMAND TO FIND FRAME SIZE
-						command <- paste0('./', gsub(' ', '\\\\ ', exec.dir), 'get_frame_size ', 
-							gsub(' ', '\\\\ ', img.dir), '/', gsub(' ', '\\\\ ', vid_fnames[i]))
+						command <- paste(shQuote(file.path(exec.dir, 'get_frame_size')), 
+							shQuote(file.path(img.dir), vid_fnames[i]))
 
 						# SET IMAGE SIZE
 						img_size[i, ] <- as.numeric(strsplit(x=system(command=command, intern=TRUE), split=',')[[1]])
@@ -218,7 +213,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 			}else{
 
 				# COUNT NUMBER OF IMAGES IN EACH FOLDER AS A COUNT OF THE NUMBER OF FRAMES
-				for(i in 1:length(vid_fnames)) vid_nframes[i] <- length(list.files(paste0(img.dir, '/', imgs_list_files[i])))
+				for(i in 1:length(vid_fnames)) vid_nframes[i] <- length(list.files(file.path(img.dir, imgs_list_files[i])))
 				
 				# MAKE SURE THE NUMBER OF VIDEO FRAMES ARE THE SAME AMONG ALL VIEWS
 				if(sd(vid_nframes) > 0){
@@ -233,7 +228,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 
 				# COUNT NUMBER OF IMAGES IN EACH FOLDER AS A COUNT OF THE NUMBER OF FRAMES
 				for(i in 1:length(vid_fnames)){
-					image_full_fpath <- paste0(img.dir, '/', imgs_list_files[i], '/', list.files(paste0(img.dir, '/', imgs_list_files[i]))[1])
+					image_full_fpath <- list.files(file.path(img.dir, imgs_list_files[i]), full.names=TRUE)[1]
 
 					# Get image dimensions
 					if(grepl(pattern='[.]jpg$|[.]jpeg$', x=image_full_fpath, ignore.case=TRUE)) img_dim <- dim(readJPEG(image_full_fpath, native=TRUE))
@@ -258,7 +253,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 	if(!file.exists(corner.dir)) dir.create(path=corner.dir)
 
 	# CREATE SUB FOLDERS IF NOT PRESENT
-	for(dir_name in img_sub_dir) if(!file.exists(paste0(corner.dir, '/', dir_name))) dir.create(paste0(corner.dir, '/', dir_name))
+	for(dir_name in img_sub_dir) if(!file.exists(file.path(corner.dir, dir_name))) dir.create(file.path(corner.dir, dir_name))
 
 	# CHECK CAL VERIFY IF NON-NULL
 	if(file.exists(img.dir) && !is.null(verify.dir)){
@@ -267,10 +262,10 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 		if(!file.exists(verify.dir)) dir.create(verify.dir)
 
 		# CREATE VIEW FOLDERS IF VERIFY FOLDER IS EMPTY
-		for(dir_name in img_sub_dir) if(!file.exists(paste0(verify.dir, '/', dir_name))) dir.create(paste0(verify.dir, '/', dir_name))
+		for(dir_name in img_sub_dir) if(!file.exists(file.path(verify.dir, dir_name))) dir.create(file.path(verify.dir, dir_name))
 
 		# SET VERIFY FILE PATHS AND FILE NAMES
-		verify_fpaths <- paste0(verify.dir, '/', list.files(verify.dir))
+		verify_fpaths <- list.files(verify.dir, full.names=TRUE)
 		if(img_type == 'image') verify_fnames <- img_fnames
 	}
 
@@ -329,7 +324,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 
 	# CHECK IF CORNERS ARE FOUND IN ALL VIEWS
 	list_files_length <- rep(NA, num_views)
-	for(i in 1:num_views) list_files_length[i] <- length(list.files(paste0(corner.dir, '/', img_sub_dir[i])))
+	for(i in 1:num_views) list_files_length[i] <- length(list.files(file.path(corner.dir, img_sub_dir[i])))
 
 	# IF ALL FOLDERS HAVE FILES, PROMPT WHETHER TO RE-DETECT CORNERS
 	if(sum(list_files_length > 0) == num_views){
@@ -338,7 +333,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 			cat(paste0("Saved calibration corners found for all views in '", corner.dir, "' folder.\n\n"))
 
 			for(i in 1:num_views){
-				num_frames_detected <- length(list.files(paste0(corner.dir, '/', img_sub_dir[i])))
+				num_frames_detected <- length(list.files(file.path(corner.dir, img_sub_dir[i])))
 				if(img_type == 'image'){
 					cat(paste0("\t\t", img_sub_dir[i], paste(rep(' ', img_sub_dir_salign[i]), collapse='')))
 					cat(paste0(": Corners detected in ", num_frames_detected, " aspects\n"))
@@ -385,15 +380,15 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 		
 					# SET VERIFY FILEPATH IF NON-NULL
 					verify_fpath <- NULL
-					if(!is.null(verify_fpaths)) verify_fpath <- paste0(verify_fpaths[j], '/', verify_fnames[i])
+					if(!is.null(verify_fpaths)) verify_fpath <- file.path(verify_fpaths[j], verify_fnames[i])
 
 					# SET CORNER FILEPATH
-					corner_fpath <- paste0(corner.dir, '/', img_sub_dir[j], '/', gsub('[.][A-Za-z]+$', '.txt', img_fnames[i]))
+					corner_fpath <- file.path(corner.dir, img_sub_dir[j], gsub('[.][A-Za-z]+$', '.txt', img_fnames[i]))
 				
 					# SPECIFY WHETHER TO FLIP CORNER ORDER
 					if(flip.view && j == 2){flip <- TRUE}else{flip <- FALSE}
 
-					cal_corners[, , i, j] <- findCheckerboardCorners(image.file=paste0(img_fpaths[j], '/', img_fnames[i]), 
+					cal_corners[, , i, j] <- findCheckerboardCorners(image.file=file.path(img_fpaths[j], img_fnames[i]), 
 						nx=nx, ny=ny, flip=flip, corner.file=corner_fpath, verify.file=verify_fpath, print.progress=FALSE, max.dist.int.corners=max.dist.int.corners)
 
 					if(print.progress){
@@ -439,11 +434,11 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 					frame_nums <- round(seq(0,min_nframes-5,length=num.aspects.read)) + 1
 					
 					# EXTRACT FRAMES
-					extractFrames(file=paste0(img.dir, '/', vid_fnames[i]), save.to=paste0(verify.dir, '/', img_sub_dir[i]),
+					extractFrames(file=file.path(img.dir, vid_fnames[i]), save.to=file.path(verify.dir, img_sub_dir[i]),
 						frames=frame_nums, video.i=list('fps'=vid_fps[i], 'frames'=min_nframes), warn.min=NULL)
 					
 					# GET FILENAMES
-					save_to_names <- list.files(paste0(verify.dir, '/', img_sub_dir[i]))
+					save_to_names <- list.files(file.path(verify.dir, img_sub_dir[i]))
 
 					for(j in 1:length(save_to_names)){
 
@@ -451,10 +446,10 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 						if(flip.view && i == 2){flip <- TRUE}else{flip <- FALSE}
 
 						# SET CORNER FILEPATH
-						corner_fpath <- paste0(corner.dir, '/', img_sub_dir[i], '/', gsub('[.][A-Za-z]+$', '.txt', save_to_names[j]))
+						corner_fpath <- file.path(corner.dir, img_sub_dir[i], gsub('[.][A-Za-z]+$', '.txt', save_to_names[j]))
 
 						# DETECT CORNERS IN IMAGES IN VERIFY DIRECTORY
-						image_fpath <- paste0(verify.dir, '/', img_sub_dir[i], '/', save_to_names[j])
+						image_fpath <- file.path(verify.dir, img_sub_dir[i], save_to_names[j])
 						findCheckerboardCorners(image.file=image_fpath, nx=nx, ny=ny, flip=flip, corner.file=corner_fpath, 
 							sub.pix.win.min=23, verify.file=image_fpath, print.progress=FALSE, max.dist.int.corners=max.dist.int.corners)
 					}
@@ -466,13 +461,13 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 					if(img_type == 'video frames') input_video <- 0
 
 					# WRITE COMMAND
-					command <- paste0(
-						'./', gsub(' ', '\\\\ ', exec.dir), 'find_checkerboard_corners ', 
-						gsub(' ', '\\\\ ', img.dir), '/', gsub(' ', '\\\\ ', vid_fnames[i]), ' ', 
-						gsub(' ', '\\\\ ', corner.dir), '/', gsub(' ', '\\\\ ', img_sub_dir[i]), ' ', 
-						gsub(' ', '\\\\ ', verify.dir), '/', gsub(' ', '\\\\ ', img_sub_dir[i]), ' ', 
-						nx, ' ', ny, ' ', num.aspects.read, ' ', num.aspects.read+80, ' ', 
-						min_nframes, ' 0 ', as.numeric(with.circles), ' ', input_video)
+					command <- paste(
+						shQuote(file.path(exec.dir, 'find_checkerboard_corners')),
+						shQuote(file.path(img.dir, vid_fnames[i])),
+						shQuote(file.path(corner.dir, img_sub_dir[i])),
+						shQuote(file.path(verify.dir, img_sub_dir[i])),
+						nx, ny, num.aspects.read, num.aspects.read+80, 
+						min_nframes, 0, as.numeric(with.circles), input_video)
 
 					# CALL COMMAND
 					#cat('\n');cat(command, '\n')
@@ -482,7 +477,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 				if(print.progress){
 
 					# NUMBER OF CORNERS DETECTED
-					num_frames_detected <- length(list.files(paste0(corner.dir, '/', img_sub_dir[i])))
+					num_frames_detected <- length(list.files(file.path(corner.dir, img_sub_dir[i])))
 
 					cat(paste(rep(' ', img_sub_dir_salign[i]), collapse=''))
 					cat(paste0(" Corners detected in ", num_frames_detected, " frames\n"))
@@ -496,7 +491,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 
 		# GET FRAME NAMES
 		frame_names <- c()
-		for(i in 1:num_views) frame_names <- c(frame_names, gsub('.txt', '', list.files(paste0(corner.dir, '/', img_sub_dir[i]))))
+		for(i in 1:num_views) frame_names <- c(frame_names, gsub('.txt', '', list.files(file.path(corner.dir, img_sub_dir[i]))))
 
 		# GET UNIQUE FRAME NAMES
 		frame_names_unique <- unique(frame_names)
@@ -509,12 +504,12 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 		for(i in 1:num_views){
 
 			# GET CORNER FILES
-			corner_files <- gsub('.txt', '', list.files(paste0(corner.dir, '/', img_sub_dir[i])))
+			corner_files <- gsub('.txt', '', list.files(file.path(corner.dir, img_sub_dir[i])))
 	
 			# READ CORNERS INTO ARRAY FROM FILES
 			for(j in 1:length(corner_files)){
 				cal_corners[, , corner_files[j], i] <- 
-					as.matrix(read.table(paste0(corner.dir, '/', img_sub_dir[i], '/', corner_files[j], '.txt')))
+					as.matrix(read.table(file.path(corner.dir, img_sub_dir[i], paste0(corner_files[j], '.txt'))))
 			}
 		}
 	}
@@ -775,14 +770,14 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 		# CREATE FOLDERS IF NOT PRESENT ALREADY
 		cal_sub_dig_dir <- paste0(calib_dir, 'Calibration unification points')
 		if(!file.exists(cal_sub_dig_dir)) dir.create(cal_sub_dig_dir)
-		for(i in 1:length(img_sub_dir)) if(!file.exists(paste0(cal_sub_dig_dir, '/', img_sub_dir[i]))) dir.create(paste0(cal_sub_dig_dir, '/', img_sub_dir[i]))
+		for(i in 1:length(img_sub_dir)) if(!file.exists(file.path(cal_sub_dig_dir, img_sub_dir[i]))) dir.create(file.path(cal_sub_dig_dir, img_sub_dir[i]))
 
 		#cal_uni_ref_pts_names <- 
 		ref_shapes <- c('triangle', 'circle', 'square', 'pentagon')
 		cal_uni_ref_pts_names <- c(ref_shapes, paste0('double_', ref_shapes), paste0('paper_corner', 1:4), paste0('Ref_point_', 1:4))
 
 		digitize_ref_points <- TRUE
-		if(length(list.files(paste0(cal_sub_dig_dir, '/', img_sub_dir[1]))) > 0){
+		if(length(list.files(file.path(cal_sub_dig_dir, img_sub_dir[1]))) > 0){
 			if(print.progress) cat("\n\t\tSaved calibration unification reference points detected.\n\n")
 			response <- readline(prompt="\t\tDo you wish to re-digitize or edit the calibration unification reference points? (y/n) : ");cat('\n')
 			if(tolower(response) %in% c('no', 'n')) digitize_ref_points <- FALSE
@@ -798,8 +793,8 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 
 		# FIND FILES AVAILABLE FOR ALL THREE VIEWS
 		cal_uni_ref_dirs <- list.files(cal_sub_dig_dir)
-		cal_uni_ref <- list.files(paste0(cal_sub_dig_dir, '/', img_sub_dir[1]))
-		for(i in 2:length(img_sub_dir)) cal_uni_ref <- cal_uni_ref[cal_uni_ref %in% list.files(paste0(cal_sub_dig_dir, '/', img_sub_dir[i]))]
+		cal_uni_ref <- list.files(file.path(cal_sub_dig_dir, img_sub_dir[1]))
+		for(i in 2:length(img_sub_dir)) cal_uni_ref <- cal_uni_ref[cal_uni_ref %in% list.files(file.path(cal_sub_dig_dir, img_sub_dir[i]))]
 		
 		# CREATE EMPTY REFERENCE POINT MATRICES
 		cal_uni_ref1 <- cal_uni_ref2 <- matrix(NA, nrow=0, ncol=3)
@@ -812,7 +807,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 				dimnames=list(cal_uni_ref_pts_names, NULL, img_sub_dir))
 
 			for(j in 1:length(img_sub_dir)){
-				lm <- readShapes(paste0(cal_sub_dig_dir, '/', img_sub_dir[j], '/', cal_uni_ref[i]))$landmarks.pixel
+				lm <- readShapes(file.path(cal_sub_dig_dir, img_sub_dir[j], cal_uni_ref[i]))$landmarks.pixel
 				cal_uni_ref_frame[rownames(lm), , j] <- lm
 			}
 			
@@ -909,7 +904,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 
 		# CREATE SUB-FOLDERS IF THEY DO NOT EXIST
 		if(!is.null(view_combo_sub_dir)){
-			for(dir_name in view_combo_sub_dir) if(!file.exists(paste0(error.dir, '/', dir_name))) dir.create(paste0(error.dir, '/', dir_name))
+			for(dir_name in view_combo_sub_dir) if(!file.exists(file.path(error.dir, dir_name))) dir.create(file.path(error.dir, dir_name))
 		}
 	}
 
@@ -954,7 +949,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 				if(length(view_combos) == 1){
 					save_to <- error.dir
 				}else{
-					save_to <- paste0(error.dir, '/', view_combo_sub_dir[i])
+					save_to <- file.path(error.dir, view_combo_sub_dir[i])
 				}
 			}
 

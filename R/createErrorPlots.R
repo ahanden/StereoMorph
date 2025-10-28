@@ -1,42 +1,39 @@
 createErrorPlots <- function(cal.coeff, corners, nx, sq.size.num, sq.size.units = '', 
-	file = ''){
+	file = '.'){
 
 	# TEST CALIBRATION ACCURACY AGAINST OPTIM SET
 	dlt_test <- dltTestCalibration(cal.coeff, corners, nx, paste0(sq.size.num, ' ', sq.size.units))
 	
 	if(is.null(file)) return(dlt_test)
 
-	# ADD DIRECTORY SYMBOL IF NOT EMPTY
-	if(file != '') if(!grepl('/$', file)) file <- paste0(file, '/')
-
 	# CREATE PLOTS
-	pdf(file=paste0(file, 'Epipolar error by aspect.pdf'))
+	pdf(file=file.path(file, 'Epipolar error by aspect.pdf'))
 	par(mar=c(6.1, 4.1, 3.1, 2.1))
 	boxplot(dlt_test$epipolar.error, ylab='Epipolar error (pixels)', xlab='', las=2)
 	mtext('Aspect', side=1, line=4)
 	dev.off()
 
-	pdf(file=paste0(file, 'Point-to-point length error by aspect.pdf'))
+	pdf(file=file.path(file, 'Point-to-point length error by aspect.pdf'))
 	par(mar=c(6.1, 4.1, 3.1, 2.1))
 	boxplot(dlt_test$ipd.error, ylab=paste0('Point-to-point length error (', sq.size.units, ')'), xlab='', las=2)
 	abline(h=0, lty=3, col=gray(0.5))
 	mtext('Aspect', side=1, line=4)
 	dev.off()
 
-	pdf(file=paste0(file, 'Point-to-point length percent error by aspect.pdf'))
+	pdf(file=file.path(file, 'Point-to-point length percent error by aspect.pdf'))
 	par(mar=c(6.1, 4.1, 3.1, 2.1))
 	boxplot((dlt_test$ipd.error / dlt_test$pair.dist)*100, ylab=paste0('Point-to-point length error (%)'), xlab='', las=2)
 	abline(h=0, lty=3, col=gray(0.5))
 	mtext('Aspect', side=1, line=4)
 	dev.off()
 
-	#pdf(file=paste0(file, 'Adjacent point-to-point length error by aspect.pdf'))
+	#pdf(file=file.path(file, 'Adjacent point-to-point length error by aspect.pdf'))
 	#par(mar=c(6.1, 4.1, 3.1, 2.1))
 	#boxplot(dlt_test$adj.pair.ipd.error, ylab=paste0('Adjacent point-to-point length error (', sq.size.units, ')'), xlab='', las=2)
 	#mtext('Aspect', side=1, line=4)
 	#dev.off()
 	
-	pdf(file=paste0(file, 'Point-to-point length, error v length.pdf'))
+	pdf(file=file.path(file, 'Point-to-point length, error v length.pdf'))
 	plot(c(dlt_test$pair.dist), c(dlt_test$ipd.error), 
 		xlab=paste0('Point-to-point length (', sq.size.units, ')'), 
 		ylab=paste0('Point-to-point length error (', sq.size.units, ')'), type='n')
@@ -48,7 +45,7 @@ createErrorPlots <- function(cal.coeff, corners, nx, sq.size.num, sq.size.units 
 		ylab=paste0('Point-to-point length error (', sq.size.units, ')'))
 	dev.off()
 
-	pdf(file=paste0(file, 'Epipolar error.pdf'))
+	pdf(file=file.path(file, 'Epipolar error.pdf'))
 	hist <- hist(c(dlt_test$epipolar.error), main=paste0('Epipolar error\n(', dim(corners)[3], ' aspects)'),
 		xlab='Epipolar error (pixels)')
 	ee_mean <- mean(dlt_test$epipolar.error, na.rm=TRUE)
@@ -67,7 +64,7 @@ createErrorPlots <- function(cal.coeff, corners, nx, sq.size.num, sq.size.units 
 		xjust=0.5, yjust=1, bty='n')
 	dev.off()
 
-	pdf(file=paste0(file, 'Point-to-point length error.pdf'))
+	pdf(file=file.path(file, 'Point-to-point length error.pdf'))
 	hist <- hist(c(dlt_test$ipd.error), main=paste0('Point-to-point length error\n(', dim(corners)[3], ' aspects)'),
 		xlab=paste0('Point-to-point length error (', sq.size.units, ')'))
 	ipd_mean <- mean(dlt_test$ipd.error, na.rm=TRUE)
@@ -89,7 +86,7 @@ createErrorPlots <- function(cal.coeff, corners, nx, sq.size.num, sq.size.units 
 		xjust=0, yjust=1, bty='n')
 	dev.off()
 
-	pdf(file=paste0(file, 'Point-to-point length percent error.pdf'))
+	pdf(file=file.path(file, 'Point-to-point length percent error.pdf'))
 	p_error <- (c(dlt_test$ipd.error) / c(dlt_test$pair.dist))*100
 	hist <- hist(p_error, main=paste0('Point-to-point length percent error\n(', dim(corners)[3], ' aspects)'),
 		xlab=paste0('Point-to-point length percent error (%)'))
@@ -158,7 +155,7 @@ createErrorPlots <- function(cal.coeff, corners, nx, sq.size.num, sq.size.units 
 	for(aspect in 1:dim(corners_3d)[3]) corners_3d[, , aspect] <- corners_3d[, , aspect] %*% RM
 	
 	# Plot reconstruction error as a function of position along the major axes
-	pdf(file=paste0(file, 'Reconstruction error v position along major axes.pdf'), width=5.5, height=7.5)
+	pdf(file=file.path(file, 'Reconstruction error v position along major axes.pdf'), width=5.5, height=7.5)
 	par(mfrow=c(3,1), mar=c(4,4,1,1))
 	plot(corners_3d[, 1, ], rec_errors, ylab='Reconstruction error (px)', xlab=paste0('Position along first major axis (', sq.size.units, ')'))
 	plot(corners_3d[, 2, ], rec_errors, ylab='Reconstruction error (px)', xlab=paste0('Position along second major axis (', sq.size.units, ')'))
@@ -181,7 +178,7 @@ createErrorPlots <- function(cal.coeff, corners, nx, sq.size.num, sq.size.units 
 	}
 
 	# Plot interpoint distance error as a function of position along the major axes
-	pdf(file=paste0(file, 'Point-to-point length (All pairs) error v position along major axes.pdf'), width=5.5, height=7.5)
+	pdf(file=file.path(file, 'Point-to-point length (All pairs) error v position along major axes.pdf'), width=5.5, height=7.5)
 	par(mfrow=c(3,1), mar=c(4.5,4.5,1,1))
 	ylab <- paste0('Point-to-point length error (', sq.size.units, ')')
 	plot(ipd_pos[, 1, ], ipd_error, ylab=ylab, xlab=paste0('Position along first major axis (', sq.size.units, ')'))
@@ -193,7 +190,7 @@ createErrorPlots <- function(cal.coeff, corners, nx, sq.size.num, sq.size.units 
 	dev.off()
 
 	# Plot interpoint distance (adjacent points only) error as a function of position along the major axes
-	pdf(file=paste0(file, 'Point-to-point length (Adjacent) error v position along major axes.pdf'), width=5.5, height=7.5)
+	pdf(file=file.path(file, 'Point-to-point length (Adjacent) error v position along major axes.pdf'), width=5.5, height=7.5)
 	par(mfrow=c(3,1), mar=c(4.5,4.5,1,1))
 	ylab <- paste0('Point-to-point length error (', sq.size.units, ')')
 	plot(adj_mean_pos[, 1, ], adj_error, ylab=ylab, xlab=paste0('Position along first major axis (', sq.size.units, ')'))
