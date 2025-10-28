@@ -16,7 +16,7 @@ digitizeImages <- function(image.file = image.file, shapes.file = NULL,
 	# GET STEREOMORPH SHINY APP DIRECTORY
 	if(is.null(app.dir)){
 		app_dir <- tryCatch({
-			app_dir <- paste0(path.package("StereoMorph"), "/extdata/apps/digitizeImages")
+			app_dir <- file.path(path.package("StereoMorph"), "extdata/apps/digitizeImages")
 		}, warning = function(w) {
 		}, error = function(e) {
 			if(e[1]$message == 'none of the packages are loaded'){
@@ -32,8 +32,8 @@ digitizeImages <- function(image.file = image.file, shapes.file = NULL,
 	}
 
 	# REMOVE ANY IMAGE FILES IN WWW IMG FOLDER
-	#if(length(list.files(paste0(app_dir, '/www/img/'))) > 0)
-	#	file.remove(paste0(app_dir, '/www/img/', list.files(paste0(app_dir, '/www/img/'))))
+	#if(length(list.files(file.path(app_dir, '/www/img/'))) > 0)
+	#	file.remove(list.files(file.path(app_dir, '/www/img/'), full.names=TRUE))
 
 	# SET IMAGE IDS
 	if(!is.null(image.id)) warning("'image.id' is no longer supported. Images are labeled according to their file name. 'image.id' input has no effect.")
@@ -51,23 +51,22 @@ digitizeImages <- function(image.file = image.file, shapes.file = NULL,
 	session_params$marker_stroke_width <- marker.stroke.width
 
 	# SAVE SESSION PARAMETERS TO JSON STRING FOR SERVER.R TO READ
-	write(x=listToJSONStr(session_params), file=paste0(app_dir, "/session_parameters.txt"))
-#	list2XML4R(list=session_params, file=paste0(app_dir, "/session_parameters.txt"))
+	write(x=listToJSONStr(session_params), file=file.path(app_dir, "/session_parameters.txt"))
+#	list2XML4R(list=session_params, file=file.path(app_dir, "/session_parameters.txt"))
 
 	# COPY HTML FILE WITHOUT IMAGE TAG
-	#file.copy(paste0(app_dir, "/digitize_image_pre.html"), paste0(app_dir, "/digitize_image.html"), overwrite=TRUE)
+	#file.copy(file.path(app_dir, "/digitize_image_pre.html"), file.path(app_dir, "/digitize_image.html"), overwrite=TRUE)
 
 	# ADD IMAGE TAG TO HTML DOCUMENT (TO LOAD IMAGE AND GET SIZE)
 	#img_tag <- paste0('\n<img style="display:none;" id="img1" src="img/', gsub(" ", "_", img_names[img_num]),'" ></img>')
-	#write(img_tag, file=paste0(app_dir, "/digitize_image.html"), append=TRUE)
+	#write(img_tag, file=file.path(app_dir, "/digitize_image.html"), append=TRUE)
 
 	# INITIATE SHINY APP
 	#run_app <- runApp(app_dir, port = NULL, host = "127.0.0.1", launch.browser = TRUE, display.mode = "auto")
 	run_app <- runApp(app_dir)
 
 	# REMOVE ANY IMAGE FILES IN IMG FOLDER
-	if(length(list.files(paste0(app_dir, '/www/img/'))) > 0)
-		file.remove(paste0(app_dir, '/www/img/', list.files(paste0(app_dir, '/www/img/'))))
+	file.remove(list.files(file.path(app_dir, '/www/img/'), full.names=TRUE))
 
 	return(NULL)
 }

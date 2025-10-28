@@ -19,7 +19,7 @@ reconstructStereoSets <- function(shapes.2d, shapes.3d, cal.file,
 	# FIND SHAPE FILES FOR EACH VIEW
 	files_2d <- list()
 	for(view in shape_fdir){
-		files_2d[[view]] <- list.files(paste0(shapes.2d, '/', view))
+		files_2d[[view]] <- list.files(file.path(shapes.2d, view))
 	}
 	
 	# GET LIST OF ALL UNIQUE FILENAMES
@@ -83,14 +83,13 @@ reconstructStereoSets <- function(shapes.2d, shapes.3d, cal.file,
 				if(sum(match_children) == 0) next
 
 				# GET CHILDREN FILE PATHS
-				children_fpaths <- c()
-				for(view in names(files_2d)) children_fpaths <- c(children_fpaths, paste0(view, '/', files_2d_matched[match_children]))
+				children_fpaths <- file.path(names(files_2d), files_2d_matched[match_children])
 
 				# FIND MODIFIED DATE OF PARENT FILE
-				mtime_parent <- file.info(paste0(shapes.3d, '/', files_3d[i], '.txt'))$mtime
+				mtime_parent <- file.info(file.path(shapes.3d, paste0(files_3d[i], '.txt')))$mtime
 
 				# FIND MODIFIED DATES OF CHILDREN FILES
-				mtime_children <- file.info(paste0(shapes.2d, '/', children_fpaths))$mtime
+				mtime_children <- file.info(file.path(shapes.2d, children_fpaths))$mtime
 
 				# SKIP (RETAIN) IF ANY CHILDREN ARE OLDER THAN PARENT
 				if(sum(mtime_children > mtime_parent, na.rm=TRUE) > 0) next
@@ -170,7 +169,7 @@ reconstructStereoSets <- function(shapes.2d, shapes.3d, cal.file,
 			if(mult_asp && print.progress) cat('\t\tAspect ', aspect, '\n', sep='')
 			
 			# GET FILE PATHS TO ALL VIEWS
-			view_fpaths <- paste0(shapes.2d, "/", shape_fdir, "/", match_aspects[aspect])
+			view_fpaths <- file.path(shapes.2d, shape_fdir, match_aspects[aspect])
 			
 			# SET VIEWS THAT EXIST
 			views <- shape_fdir[file.exists(view_fpaths)]
@@ -372,7 +371,7 @@ reconstructStereoSets <- function(shapes.2d, shapes.3d, cal.file,
 		}
 
 		# GET 3D SHAPE FILE FILE PATH
-		shapes_3d_fpath <- paste0(shapes.3d, '/', shapes_3d_fname, '.txt')
+		shapes_3d_fpath <- file.path(shapes.3d, paste0(shapes_3d_fname, '.txt'))
 		
 		# GET UNIQUE LANDMARK NAMES
 		all_landmark_names_unique <- unique(all_landmark_names)

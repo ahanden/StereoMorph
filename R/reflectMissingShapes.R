@@ -9,7 +9,7 @@ reflectMissingShapes <- function(shapes, file = NULL, print.progress = FALSE, ..
 		
 			if(is.null(file)) stop("If 'shapes' is a directory, file must also be a directory.")
 		
-			shapes_in_fpaths <- paste0(gsub('/$', '', shapes), '/', list.files(shapes))
+			shapes_in_fpaths <- file.path(shapes, list.files(shapes))
 		}
 		
 		if(is.null(file)){
@@ -21,8 +21,7 @@ reflectMissingShapes <- function(shapes, file = NULL, print.progress = FALSE, ..
 		if(grepl('[.]txt$', file[1], ignore.case=TRUE)){
 
 			# REMOVE FILE TO GET DIRECTORY
-			file_dir <- strsplit(file[1], '/')[[1]]
-			file_dir <- paste(file_dir[1:(length(file_dir)-1)], collapse='/')
+			file_dir <- dirname(file[1])
 
 			# CREATE DIRECTORY IF IT DOESN'T ALREADY EXIST
 			if(!file.exists(file_dir)) dir.create(file_dir)
@@ -31,7 +30,7 @@ reflectMissingShapes <- function(shapes, file = NULL, print.progress = FALSE, ..
 
 		}else{
 			if(!file.exists(file)) dir.create(file)
-			shapes_save_fpaths <- paste0(gsub('/$', '', file), '/', list.files(shapes))
+			shapes_save_fpaths <- file.path(file, list.files(shapes))
 		}
 
 		# CALL DRAW SHAPES FOR EACH FILE
