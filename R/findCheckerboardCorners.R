@@ -121,8 +121,7 @@ findCheckerboardCorners <- function(image.file, nx, ny, corner.file=NULL, verify
 		for(image_col in 1:ncol(image.file)){
 			#cat(image_row, ' ', image_col, '\n')
 
-			image_split <- strsplit(image.file[image_row, image_col], '/')[[1]]
-			image_name <- image_split[length(image_split)]
+			image_name <- basename(image.file[image_row, image_col])
 			success <- FALSE
 
 			# CHECK THAT IMAGE FILE EXISTS

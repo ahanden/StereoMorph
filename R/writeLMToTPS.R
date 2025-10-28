@@ -19,13 +19,13 @@ writeLMToTPS <- function(shapes.file, tps.file, in.pixels = TRUE, flip.y = TRUE,
 	if(length(dim(landmarks)) == 2){
 	
 		# Get filename
-		file_path <- gsub('[.][A-Za-z]+$', '', strsplit(shapes.file, '/')[[1]])
+		file_name <- gsub('[.][A-Z]+', basename(shapes.file), ignore.case=TRUE)
 
 		# Make sure landmarks are in alphabetical order
 		landmarks <- landmarks[sort(rownames(landmarks)), ]
 
 		# Convert to array
-		landmarks <- array(landmarks, dim=c(dim(landmarks), 1), dimnames=list(rownames(landmarks), colnames(landmarks), tail(file_path, 1)))
+		landmarks <- array(landmarks, dim=c(dim(landmarks), 1), dimnames=list(rownames(landmarks), colnames(landmarks), file_name))
 	}else{
 
 		# Make sure landmarks are in alphabetical order
