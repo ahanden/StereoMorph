@@ -4,7 +4,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 	num.sample.est = 'auto', num.sample.sets = 'auto', num.aspects.sample = 'auto', 
 	max.sample.optim = 30, nlm.calls.max = 20, fit.min.break = 1, objective.min = 1, 
 	objective.min.break = 5, with.circles = FALSE, sample.est = NULL,
-	max.dist.int.corners=20, ...){
+	max.dist.int.corners = 20, orient = NULL, ...){
 
 	################################ CHECK INPUT PARAMETERS ##############################
 
@@ -450,6 +450,10 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 
 						# DETECT CORNERS IN IMAGES IN VERIFY DIRECTORY
 						image_fpath <- file.path(verify.dir, img_sub_dir[i], save_to_names[j])
+						if (!is.null(orient)) {
+							args <- list(in_file = image_fpath, out_file = image_fpath, flip = orient[[vid_fnames[i]]][["flip"]], rotate = orient[[vid_fnames[i]]][["rotate"]])
+							do.call(rotateImg, args)
+						}
 						findCheckerboardCorners(image.file=image_fpath, nx=nx, ny=ny, flip=flip, corner.file=corner_fpath, 
 							sub.pix.win.min=23, verify.file=image_fpath, print.progress=FALSE, max.dist.int.corners=max.dist.int.corners)
 					}
