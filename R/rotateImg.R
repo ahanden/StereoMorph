@@ -1,11 +1,12 @@
 rotateImg <- function(in_file, out_file, rotate = NULL, flip = NULL) {
-
   check_system_command <- function(command) {
     tryCatch(
-      { 
-        system2(command=command, args="--version", stdout=TRUE, stderr=FALSE)
+      expr = {
+        system2(command = command, args = "--version", stdout = TRUE,
+                stderr = FALSE)
+        TRUE
       },
-      error=function(e) success <- FALSE,
+      error = function(e) FALSE
     )
   }
 
@@ -21,10 +22,10 @@ rotateImg <- function(in_file, out_file, rotate = NULL, flip = NULL) {
   if (!is.null(rotate)) {
     args <- c(args, "-rotate", rotate)
   }
-  if (flip %in% c("flip", "flop")) {
+  if (!is.null(flip) && flip %in% c("flip", "flop")) {
     args <- c(args, paste0("-", flip))
   }
 
   args <- c(shQuote(in_file), args, shQuote(out_file))
-  system2(command=command, args=args , stdout=TRUE, stderr=TRUE)
+  system2(command = command, args = args, stdout = TRUE, stderr = TRUE)
 }

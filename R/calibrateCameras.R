@@ -450,7 +450,7 @@ calibrateCameras <- function(img.dir, sq.size, nx, ny, cal.file, corner.dir,
 
 						# DETECT CORNERS IN IMAGES IN VERIFY DIRECTORY
 						image_fpath <- file.path(verify.dir, img_sub_dir[i], save_to_names[j])
-						if (!is.null(orient)) {
+						if (!is.null(orient) && vid_fnames[i] %in% names(orient)) {
 							args <- list(in_file = image_fpath, out_file = image_fpath, flip = orient[[vid_fnames[i]]][["flip"]], rotate = orient[[vid_fnames[i]]][["rotate"]])
 							do.call(rotateImg, args)
 						}
