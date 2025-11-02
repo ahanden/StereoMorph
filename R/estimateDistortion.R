@@ -1,4 +1,4 @@
-estimateDistortion <- function(undistort.params, img.size){
+estimateDistortion <- function(undistort.params, img.size, run.parallel = FALSE){
 
 	nx <- 10
 	ny <- 10
@@ -32,24 +32,41 @@ estimateDistortion <- function(undistort.params, img.size){
 		ucoor=u_corners, dcoor=d_corners, img.size=img.size)
 	par[[1]] <- c(img.size[1]/2, img.size[2]/2, p_start[[1]])
 
-	# Skip first (no distortion) case
-	for(i in 2:length(p_start)){
-
-		# Find optimal distortion coefficients, skip if returns error
-		nlm_fit <- tryCatch(
-			expr={
-				nlminb(start=c(img.size[1]/2, img.size[2]/2, p_start[[i]]), objective=distortionError, 
-					ucoor=u_corners, dcoor=d_corners, img.size=img.size)
-			},
-			error=function(cond) return(NULL),
-			warning=function(cond) return(NULL)
-		)
-
-		if(is.null(nlm_fit)) next
-
-		objectives[i] <- nlm_fit$objective
-		par[[i]] <- nlm_fit$par
+	if (run.parallel) {
+		if (run.parallel == TRUE) {
+			run.parallel <- parallel::detectCores()
+		}
+		cl <- parallel::makeCluster(min(run.parallel, length(p_start) - 1)
+                parallel::clusterEvalQ(cl, library(StereoMorph))
+		applyFn <- function(input, fn) { parallel::parLapply(cl, input, fn) }
+	} else {
+		applyFn <- lapply
 	}
+
+        inputs <- lapply(2:length(p_start), function(i) {
+          list(i = i,
+               start = c(img.size[1] / 2, img.size[2] / 2, p_start[[i]]),
+               objective = distortionError,
+               ucoor = u_corners,
+               dcoor = d_corners,
+               img.size = img.size)
+        })
+        results <- applyFn(inputs, function(params) {
+            nlm_fit <- nlminb(start = params$start,
+                              objective = params$objective,
+                              ucoor = params$ucoor,
+                              dcoor = params$dcoor,
+                              img.size = params$img.size)
+            list(i = params$i, fit = nlm_fit)
+        })
+        for (fit in results) {
+            if(!is.null(fit$fit)) {
+		objectives[fit$i] <- fit$fit$objective
+		par[[fit$i]] <- fit$fit$par
+            }
+	}
+
+        if (run.parallel) parallel::stopCluster(cl)
 	
 	# Get parameter from run with the lowest error (including no distortion case)
 	p <- par[[which.min(objectives)]]

@@ -1,4 +1,4 @@
-estimateUndistortion <- function(coor.2d, cal.nx, image.size){
+estimateUndistortion <- function(coor.2d, cal.nx, image.size, run.parallel = FALSE){
 
 	# GET NUMBER OF CORNERS IN OTHER DIMENSION
 	cal.ny <- dim(coor.2d)[1] / cal.nx
@@ -39,24 +39,41 @@ estimateUndistortion <- function(coor.2d, cal.nx, image.size){
 		coor.img=coor.2d, coor.obj=coor_obj_array, image.size=image.size)
 	par[[1]] <- c(image.size[1]/2, image.size[2]/2, p_start[[1]])
 
-	# SKIP FIRST (NO DISTORTION CASE)
-	for(i in 2:length(p_start)){
-
-		# FIND OPTIMAL DISTORTION COEFFICIENTS, SKIP IF RETURNS ERROR
-		nlm_fit <- tryCatch(
-			expr={
-				nlminb(start=c(image.size[1]/2, image.size[2]/2, p_start[[i]]), objective=undistortionError, 
-					coor.img=coor.2d, coor.obj=coor_obj_array, image.size=image.size)
-			},
-			error=function(cond) return(NULL),
-			warning=function(cond) return(NULL)
-		)
-
-		if(is.null(nlm_fit)) next
-
-		objectives[i] <- nlm_fit$objective
-		par[[i]] <- nlm_fit$par
+	if (run.parallel) {
+		if (run.parallel == TRUE) {
+			run.parallel <- parallel::detectCores()
+		}
+		cl <- parallel::makeCluster(min(run.parallel, length(p_start) - 1)
+                parallel::clusterEvalQ(cl, library(StereoMorph))
+		applyFn <- function(input, fn) { parallel::parLapply(cl, input, fn) }
+	} else {
+		applyFn <- lapply
 	}
+
+	inputs <- lapply(2:length(p_start), function(i) {
+		list(i = i,
+                     start = c(image.size[1] / 2, image.size[2] / 2, p_start[[i]]),
+                     objective = undistortionError,
+                     coor.img = coor.2d,
+                     coor.obj = coor_obj_array,
+                     image.size = image.size)
+	})
+        results <- applyFn(inputs, function(params) {
+          nlm_fit <- nlminb(start = params$start,
+                            objective = params$objective,
+                            coor.img = params$coor.img,
+                            coor.obj = params$coor.obj,
+                            image.size = params$image.size)
+          list(i=params$i, fit=nlm_fit)
+        })
+        for (fit in results) {
+		if(!is.null(fit$fit)) {
+                  objectives[fit$i] <- fit$fit$objective
+                  par[[fit$i]] <- fit$fit$par
+                }
+	}
+
+        if (run.parallel) parallel::stopCluster(cl)
 	
 	# GET PARAMETERS FROM RUN WITH LOWEST ERROR (INCLUDING NO DISTORTION CASE)
 	dist_params <- par[[which.min(objectives)]]
