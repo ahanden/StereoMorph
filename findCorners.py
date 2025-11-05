@@ -1,10 +1,19 @@
 import sys
-import cv2
-from os import path, makedirs
-from tqdm import tqdm
-import yaml
-from glob import glob
-import traceback
+try:
+    import cv2
+    from os import path, makedirs
+    from tqdm import tqdm
+    import yaml
+    from glob import glob
+    import traceback
+except Exception as e:
+    e = str(e)
+    start = e.index("'") + 1
+    stop = e.index("'", start)
+    library = e[start:stop]
+    sys.stderr.write(f"[ERROR] You need to install the {library} library.\n")
+    sys.exit(1)
+
 
 def stem(file_path):
     return path.splitext(path.basename(file_path))[0]
