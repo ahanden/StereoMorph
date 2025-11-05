@@ -1,0 +1,27 @@
+# This file provides all the information used by findCorners.py
+# Run the program like this:
+# python3 findCorners.py findCorners.yml
+# you can change "findCorners.yml" to whatever name you gave your
+# configuration file.
+
+# Number of interior corners along the x-axis (horizontal)
+nx: 8
+# NUmber of interior corners along the y-axis (vertical)
+ny: 6
+# Where to save corner coordinates (will create subdirectories for each video)
+corner_dir: /scratch/handena/Corners
+# Where to save verification images (will create subdiratctories for each video)
+verify_dir: /scratch/handena/Verify
+# How many frames to sample from the video feeds.
+# If you want to sample EVERY frame, delete sample_n_frames
+sample_n_frames: 120
+# Create an entry for each video you want to analyze
+# filename: Location of the video
+# rotate: Degress to rotate the video
+# vertical_flip: if set to True, will flip the video vertically
+# horizontal_flip: if set to True, will flip the video vertically
+videos:
+   - filename: ppv_scale.avi
+   - filename: ventral_scale.avi
+     vertical_flip: True
+   - filename: lateral_scale.avi
