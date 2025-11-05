@@ -39,7 +39,8 @@ def write_corners(file_path, corners):
         for row in corners:
             stream.write(f"{row[0][0]}\t{row[0][1]}\n")
 
-def next_frame(video_stream):
+def get_frame(video_stream, frame_number):
+    video_stream.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
     status, frame = video_stream.read()
     if not status:
         raise Exception(f"Error reading video {video['filename']}")
@@ -87,10 +88,10 @@ def main(yaml_config_file):
     total_frames = min(_['total_frames'] for _ in config['videos'])
     sample_rate = max(1, total_frames // int(config.get('sample_n_frames', total_frames)))
 
-    for nth_frame in tqdm(range(total_frames)):
+    for nth_frame in tqdm(range(0, total_frames, sample_rate)):
         frames = []
         for video in config['videos']:
-            frames.append(next_frame(video['stream']))
+            frames.append(get_frame(video['stream'], nth_frame))
 
         if nth_frame % sample_rate != 0:
             continue
