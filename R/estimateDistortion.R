@@ -36,7 +36,7 @@ estimateDistortion <- function(undistort.params, img.size, run.parallel = FALSE)
 		if (run.parallel == TRUE) {
 			run.parallel <- parallel::detectCores()
 		}
-		cl <- parallel::makeCluster(min(run.parallel, length(p_start) - 1)
+		cl <- parallel::makeCluster(min(run.parallel, length(p_start) - 1))
                 parallel::clusterEvalQ(cl, library(StereoMorph))
 		applyFn <- function(input, fn) { parallel::parLapply(cl, input, fn) }
 	} else {
