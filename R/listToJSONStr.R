@@ -40,6 +40,7 @@ listToJSONStr <- function(list, direct = FALSE){
 
 	json_str <- paste0(json_str, "}")
 	json_str <- gsub("(,[ ]*)(]|})", "\\2", json_str)
+	json_str <- gsub("\\", "\\\\", json_str, fixed=TRUE)
 
 	json_str
 }
