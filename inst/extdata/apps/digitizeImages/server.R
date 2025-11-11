@@ -37,7 +37,7 @@ shinyServer(function(input, output) {
 		if(!is.null(json_list$change_image)){
 
 			# Get image full file path
-			image_full_fpath <- paste0(json_list$prev_wd, '/', json_list$image_fpath)
+      image_full_fpath <- json_list$image_fpath
 			
 			# Remove images currently in img folder
 			if(length(list.files('www/img/')) > 0) file.remove(paste0('www/img/', list.files('www/img/')))
