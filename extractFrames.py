@@ -80,7 +80,7 @@ def main(yaml_config_file, output_folder):
                 v_flip=video.get('vertical_flip', False),
                 h_flip=video.get('horizontal_flip', False),
             )
-            cv2.imwrite(path.join(video['output_path'], f"{nth_frame:06}.jpeg", frame)
+            cv2.imwrite(path.join(video['output_path'], f"{nth_frame:06}.jpeg"), frame)
 
 if __name__ == "__main__":
     debug = False
